@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estacionamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .parking-lot {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .spot {
+            width: 100px;
+            height: 100px;
+            background-color: #d1d1d1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .occupied {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-right: 5px;
+        }
+
+        input,
+        button {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .ticket {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sistema de Estacionamento</h1>
+
+    <div class="parking-lot" id="parkingLot">
+        <!-- As vagas de estacionamento serão exibidas aqui -->
+    </div>
+
+    <form id="entryForm">
+        <label for="plate">Placa:</label>
+        <input type="text" id="plate" placeholder="ABC1D23" required>
+
+        <label for="time">Horário (HH:MM:SS):</label>
+        <input type="time" step="1" id="time" required>
+
+        <button type="button" onclick="parkCar()">Entrada</button>
+        <button type="button" onclick="removeCar()">Saída</button>
+    </form>
+
+    <div class="ticket" id="ticket" style="display: none;">
+        <!-- Informações do ticket serão exibidas aqui -->
+    </div>
+
+    <script>
+        const parkingLot = [];
+        const rows = 3, columns = 4;
+        const baseRate = 10;  // Valor para até 3 horas
+        const extraRate = 4;  // Valor por hora adicional
+
+        const regexMercosul = /^[A-Z]{3}\d{1}[A-Z]\d{2}$/;
+        const stateRules = {
+            "Amapá": [/^[NEI-Z]{3}$/, /^[NF][AB]$/, /^[QL][N-T]$/, /^[SA][K-M]$/],
+            "Pará": [/^[JTV][A-Z]$/, /^[JW][A-E]$/, /^[NS][E-Z]$/, /^[NT][A-C]$/, /^[OB][T-Z]$/, /^[OC][A]$/, /^[OF][I-W]$/, /^[OS][W-Z]$/, /^[OT][A-Z]$/, /^[QD-E][A-Z]$/, /^[QV][A-Z]$/, /^[RW][K-Z]$/, /^[RW][A-D]$/],
+            "Roraima": [/^[NA][H-Z]$/, /^[NB][A]$/, /^[NU][H-L]$/, /^[RZ][A-D]$/]
+        };
+
+        // Inicializando o estacionamento vazio
+        for (let i = 0; i < rows; i++) {
+            parkingLot[i] = Array(columns).fill(null);
+        }
+
+        function renderParkingLot() {
+            const parkingLotDiv = document.getElementById('parkingLot');
+            parkingLotDiv.innerHTML = '';
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    const spot = document.createElement('div');
+                    spot.classList.add('spot');
+                    spot.innerText = parkingLot[i][j] ? parkingLot[i][j].plate : 'Livre';
+                    if (parkingLot[i][j]) spot.classList.add('occupied');
+                    parkingLotDiv.appendChild(spot);
+                }
+            }
+        }
+
+        function getState(plate) {
+            for (const [state, rules] of Object.entries(stateRules)) {
+                if (rules.some(rule => rule.test(plate.substring(0, 3)))) {
+                    return state;
+                }
+            }
+            return "Estado não reconhecido";
+        }
+
+        function parkCar() {
+            const plate = document.getElementById('plate').value.toUpperCase();
+            const time = document.getElementById('time').value;
+
+            if (!regexMercosul.test(plate)) {
+                alert("Placa inválida!");
+                return;
+            }
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    if (parkingLot[i][j] && parkingLot[i][j].plate === plate) {
+                        alert("Veículo já está no estacionamento!");
+                        return;
+                    }
+                }
+            }
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    if (!parkingLot[i][j]) {
+                        parkingLot[i][j] = { plate, entryTime: time, state: getState(plate) };
+                        renderParkingLot();
+                        alert(`Veículo estacionado com sucesso na vaga (${i + 1}, ${j + 1})`);
+                        return;
+                    }
+                }
+            }
+            alert("Estacionamento lotado!");
+        }
+
+        function removeCar() {
+            const plate = document.getElementById('plate').value.toUpperCase();
+            const time = document.getElementById('time').value;
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    if (parkingLot[i][j] && parkingLot[i][j].plate === plate) {
+                        const entryTime = parkingLot[i][j].entryTime;
+                        const state = parkingLot[i][j].state;
+                        const duration = calculateDuration(entryTime, time);
+                        const charge = calculateCharge(duration);
+
+                        displayTicket(plate, state, duration, charge);
+                        parkingLot[i][j] = null;
+                        renderParkingLot();
+                        return;
+                    }
+                }
+            }
+            alert("Veículo não encontrado no estacionamento.");
+        }
+
+        function calculateDuration(startTime, endTime) {
+            const [startH, startM, startS] = startTime.split(":").map(Number);
+            const [endH, endM, endS] = endTime.split(":").map(Number);
+
+            const start = new Date(0, 0, 0, startH, startM, startS);
+            const end = new Date(0, 0, 0, endH, endM, endS);
+
+            const diff = (end - start) / 3600000; // Converter milissegundos para horas
+            return Math.ceil(diff);
+        }
+
+        function calculateCharge(hours) {
+            if (hours <= 3) return baseRate;
+            return baseRate + Math.ceil(hours - 3) * extraRate;
+        }
+
+        function displayTicket(plate, state, duration, charge) {
+            const ticketDiv = document.getElementById('ticket');
+            ticketDiv.style.display = 'block';
+            ticketDiv.innerHTML = `
+                <h3>Ticket de Estacionamento</h3>
+                <p>Placa: ${plate}</p>
+                <p>Estado: ${state}</p>
+                <p>Duração: ${duration} horas</p>
+                <p>Total a Pagar: R$ ${charge.toFixed(2)}</p>
+                `;
+        }
+
+        renderParkingLot();
+    </script>
+</body>
+
+</html>
