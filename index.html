@@ -106,9 +106,9 @@
 
         const regexMercosul = /^[A-Z]{3}\d{1}[A-Z]\d{2}$/;
         const stateRules = {
-            "Amapá": [/^[NEI-Z]{3}$/, /^[NF][AB]$/, /^[QL][N-T]$/, /^[SA][K-M]$/],
-            "Pará": [/^[JTV][A-Z]$/, /^[JW][A-E]$/, /^[NS][E-Z]$/, /^[NT][A-C]$/, /^[OB][T-Z]$/, /^[OC][A]$/, /^[OF][I-W]$/, /^[OS][W-Z]$/, /^[OT][A-Z]$/, /^[QD-E][A-Z]$/, /^[QV][A-Z]$/, /^[RW][K-Z]$/, /^[RW][A-D]$/],
-            "Roraima": [/^[NA][H-Z]$/, /^[NB][A]$/, /^[NU][H-L]$/, /^[RZ][A-D]$/]
+            "Minas Gerais": [/^N[X-Y]([X-Z]|[A-G])$/],
+            "Goiás": [/^K[A-F]([V-Z]|[A-C])$/],
+            "Distrito Federal": [/^J[D-K][P-R]$/]
         };
 
         // Inicializando o estacionamento vazio
@@ -131,8 +131,9 @@
         }
 
         function getState(plate) {
+            const prefix = plate.substring(0, 3).toUpperCase(); // Extrai o prefixo
             for (const [state, rules] of Object.entries(stateRules)) {
-                if (rules.some(rule => rule.test(plate.substring(0, 3)))) {
+                if (rules.some(rule => rule.test(prefix))) {
                     return state;
                 }
             }
