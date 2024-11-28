@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
+        /* Estilo geral */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f4f4f9;
@@ -31,7 +32,7 @@
         }
 
         .spot {
-            width: 20%;
+            width: 10%;
             aspect-ratio: 1 / 1;
             display: flex;
             align-items: center;
@@ -40,7 +41,7 @@
             font-size: 14px;
             border-radius: 8px;
             text-align: center;
-            margin: 10px;
+            margin: 10px 90px;
         }
 
         .free {
@@ -107,12 +108,72 @@
             font-size: 14px;
             color: #333333;
         }
+
+        /* Estilos para smartphones */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .parking-lot {
+                margin: 10px 0;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .spot {
+                width: 20%;
+                margin: 5px;
+            }
+
+            .form-control {
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 6px 15px;
+            }
+
+            .ticket {
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            /* Formulário empilhado */
+            #entryForm {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #entryForm .col-12 {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            #entryForm .col-12.col-md-4 {
+                margin-bottom: 10px;
+            }
+
+            #entryForm .d-flex {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
     </style>
+
 </head>
 
 <body>
     <div class="container text-center">
-        <h1>Sistema de Estacionamento</h1>
+        <h1>Sistema de Gestão de Estacionamento</h1>
 
         <!-- Estacionamento -->
         <div class="row parking-lot g-2" id="parkingLot">
@@ -167,9 +228,62 @@
         function getState(plate) {
             const prefix = plate.substring(0, 3).toUpperCase();
             const stateRules = {
-                "Minas Gerais": [/^N[X-Y]([X-Z]|[A-G])$/],
-                "Goiás": [/^K[A-F]([V-Z]|[A-C])$/],
-                "Distrito Federal": [/^J[D-K][P-R]$/]
+                "Minas Gerais": [
+                    // Regra 1
+                    /^N[X-Y]([X-Z]|[A-G])$/,
+                    // Regra 2
+                    /^[G-H][K-O][J-K]$/,
+                    // Regra 3
+                    /^O[L-M]([O-Z]|[A-H])$/,
+                    // Regra 4
+                    /^O[O-R]([V-Z]|[A-C])$/,
+                    // Regra 5
+                    /^O[W-X][H-K]$/,
+                    // Regra 6
+                    /^P[U-Z][A-Z]$/,
+                    // Regra 7
+                    /^Q[M-Q][Q-Z]$/,
+                    // Regra 8
+                    /^QU[A-Z]$/,
+                    // Regra 9
+                    /^R[F-G][A-D]$/,
+                    // Regra 10
+                    /^R[M-N][D-Z]$/,
+                    // Regra 11
+                    /^R[T-V][A-Z]$/
+                ],
+                "Goiás": [
+                    // Regra 1
+                    /^K[A-F]([V-Z]|[A-C])$/,
+                    // Regra 2
+                    /^N[F-G][C-Z]$/,
+                    // Regra 3
+                    /^N[J-L]([X-Z]|[A-U])$/,
+                    // Regra 4
+                    /^N[V-W][O-R]$/,
+                    // Regra 5
+                    /^O[G-H]([H-Z]|A)$/,
+                    // Regra 6
+                    /^O[M-O]([I-Z]|[A-F])$/,
+                    // Regra 7
+                    /^P[Q-R][A-Z]$/,
+                    // Regra 8
+                    /^Q[T][N-S]$/,
+                    // Regra 9
+                    /^R[B-C][K-N]$/,
+                    // Regra 10
+                    /^S[B-D]([W-Z]|[A-S])$/
+                ],
+                "Distrito Federal": [
+                    // Regra 1
+                    /^J[D-K][P-R]$/,
+                    // Regra 2
+                    /^O[V][M-V]$/,
+                    // Regra 3
+                    /^[O-P][ZAB][W-Z]$/,
+                    // Regra 4
+                    /^R[E][C-V]$/
+                ]
             };
             for (const [state, rules] of Object.entries(stateRules)) {
                 if (rules.some(rule => rule.test(prefix))) {
@@ -183,6 +297,17 @@
             const plate = document.getElementById('plate').value.toUpperCase();
             const time = document.getElementById('time').value;
 
+            // Verifica se o carro já está estacionado
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    if (parkingLot[i][j] && parkingLot[i][j].plate === plate) {
+                        alert("Este carro já está estacionado.");
+                        return; // Não permite estacionar novamente
+                    }
+                }
+            }
+
+            // Procura por uma vaga livre
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
                     if (!parkingLot[i][j]) {
@@ -193,8 +318,10 @@
                     }
                 }
             }
+
             alert("Estacionamento lotado!");
         }
+
 
         function removeCar() {
             const plate = document.getElementById('plate').value.toUpperCase();
@@ -205,6 +332,7 @@
                     if (parkingLot[i][j] && parkingLot[i][j].plate === plate) {
                         const entryTime = parkingLot[i][j].entryTime;
                         const state = parkingLot[i][j].state;
+
                         const duration = calculateDuration(entryTime, time);
                         const charge = calculateCharge(duration);
 
@@ -219,34 +347,55 @@
             alert("Carro não encontrado!");
         }
 
+
         function calculateDuration(startTime, endTime) {
-            const [startH, startM, startS] = startTime.split(":").map(Number);
-            const [endH, endM, endS] = endTime.split(":").map(Number);
+            const [startH, startM] = startTime.split(":").map(Number);
+            const [endH, endM] = endTime.split(":").map(Number);
 
-            const start = new Date(0, 0, 0, startH, startM, startS);
-            const end = new Date(0, 0, 0, endH, endM, endS);
+            // Convertendo os horários para minutos totais
+            const startTotalMinutes = startH * 60 + startM;
+            const endTotalMinutes = endH * 60 + endM;
 
-            const diff = (end - start) / 3600000; // Converter milissegundos para horas
-            return Math.ceil(diff);
+            // Ajustando para caso de saída no dia seguinte
+            const diffInMinutes = endTotalMinutes >= startTotalMinutes
+                ? endTotalMinutes - startTotalMinutes
+                : 24 * 60 - startTotalMinutes + endTotalMinutes;
+
+            const hours = Math.floor(diffInMinutes / 60);
+            const minutes = diffInMinutes % 60;
+
+            return { hours, minutes };
         }
 
-        function calculateCharge(hours) {
-            const baseRate = 10;
-            const extraRate = 4;
-            if (hours <= 3) return baseRate;
-            return baseRate + Math.ceil(hours - 3) * extraRate;
+
+        function calculateCharge(duration) {
+            const totalMinutes = duration.hours * 60 + duration.minutes;
+
+            if (totalMinutes <= 15) {
+                return 0; // Gratuito para até 15 minutos
+            }
+
+            if (totalMinutes <= 180) {
+                return 10; // R$ 10 para até 3 horas (180 minutos)
+            }
+
+            // R$ 10 para as primeiras 3 horas + R$ 4 por hora ou fração adicional
+            const extraHours = Math.ceil((totalMinutes - 180) / 60);
+            return 10 + extraHours * 4;
         }
+
 
         function displayTicket(plate, state, duration, charge) {
             const ticketDiv = document.getElementById('ticket');
             ticketDiv.style.display = 'block';
+
             ticketDiv.innerHTML = `
-                <h3>Ticket de Estacionamento</h3>
-                <p><strong>Placa:</strong> ${plate}</p>
-                <p><strong>Estado:</strong> ${state}</p>
-                <p><strong>Duração:</strong> ${duration} horas</p>
-                <p><strong>Total a Pagar:</strong> R$ ${charge.toFixed(2)}</p>
-            `;
+        <h3>Ticket de Estacionamento</h3>
+        <p><strong>Placa:</strong> ${plate}</p>
+        <p><strong>Estado:</strong> ${state}</p>
+        <p><strong>Duração:</strong> ${duration.hours} horas e ${duration.minutes} minutos</p>
+        <p><strong>Total a Pagar:</strong> R$ ${charge.toFixed(2)}</p>
+    `;
         }
 
         renderParkingLot();
